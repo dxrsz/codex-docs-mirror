@@ -102,6 +102,10 @@ def build(out, base_url):
     body = index_with(base_url.rstrip("/") + "/" if base_url else "")
     (out / "llms.txt").write_text(NOTICE + "\n" + body + "\n", "utf-8")
     (out / "README.md").write_text(NOTICE + "\n" + index_with("") + "\n", "utf-8")
+    # Plain URL list (one per line) so `wget -x -nH --cut-dirs=1 -i <base>/urls.txt` can fetch everything.
+    files = ["llms.txt", "README.md"] + sorted(p.relative_to(out).as_posix() for p in docs.rglob("*") if p.is_file())
+    prefix = base_url.rstrip("/") + "/" if base_url else ""
+    (out / "urls.txt").write_text("".join(f"{prefix}{p}\n" for p in files), "utf-8")
     (out / ".nojekyll").write_text("")  # serve .md files raw instead of rendering them
     print(f"Built {ok} pages into {out}")
 
