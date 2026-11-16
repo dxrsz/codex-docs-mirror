@@ -27,6 +27,36 @@ B=https://dxrsz.github.io/codex-docs-mirror; curl -s $B/urls.txt | while read -r
 
 Just want one file? `curl -O https://dxrsz.github.io/codex-docs-mirror/docs/llms-full.txt` has everything.
 
+## Point Codex's `openai-docs` skill at this mirror
+
+Codex ships a bundled `openai-docs` skill that reads docs from developers.openai.com and the OpenAI Docs MCP server, which doesn't help if those are blocked. You can't just edit it: bundled skills live in `~/.codex/skills/.system/` and Codex overwrites that folder when it updates. A skill with the same name doesn't replace it either (Codex shows both). Instead, install [`skills/openai-docs-mirror`](skills/openai-docs-mirror/SKILL.md) and turn off the bundled one.
+
+1. Install the mirror skill into your user skills folder:
+
+   ```bash
+   mkdir -p ~/.agents/skills/openai-docs-mirror && curl -sL https://raw.githubusercontent.com/dxrsz/codex-docs-mirror/main/skills/openai-docs-mirror/SKILL.md -o ~/.agents/skills/openai-docs-mirror/SKILL.md
+   ```
+
+   PowerShell:
+
+   ```powershell
+   New-Item -ItemType Directory -Force "$HOME\.agents\skills\openai-docs-mirror" | Out-Null; Invoke-WebRequest https://raw.githubusercontent.com/dxrsz/codex-docs-mirror/main/skills/openai-docs-mirror/SKILL.md -OutFile "$HOME\.agents\skills\openai-docs-mirror\SKILL.md"
+   ```
+
+2. Disable the bundled skill by adding this to `~/.codex/config.toml`:
+
+   ```toml
+   [[skills.config]]
+   name = "openai-docs"
+   enabled = false
+   ```
+
+3. Restart Codex. In `/skills` you should see `openai-docs-mirror` and no `openai-docs`.
+
+Optional: download a local copy (see above) to `~/codex-docs`, or set `CODEX_DOCS_DIR` to where you put it. The skill searches it before going to the network.
+
+The mirror only covers Codex docs. The bundled skill also handles general OpenAI API questions, so with it disabled, Codex answers those from what the model already knows.
+
 ## Rebuild
 
 `python scripts/sync.py --out build` (fetches from the official site, so it needs access to it).
